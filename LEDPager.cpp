@@ -14,29 +14,15 @@
 using namespace std;
 using namespace gloox;
 
-class ConnListener : public ConnectionListener {
-  public:
-    virtual void onConnect() {
-      std::cout << "ConnListener::onConnect()" << endl;
-    }
-    virtual void onDisconnect(ConnectionError e) {
-      std::cout << "ConnListener::onDisconnect() " << e << endl;
-    }
-    virtual bool onTLSConnect(const CertInfo& info) {
-      std::cout << "ConnListener::onTLSConnect()" << endl;
-      return true;
-    }
-};
-
-class LEDPager : public MessageHandler, VCardHandler, ConnListener {
+class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
 
   public: 
-  LEDPager (string newjid, string password, int debug)
+  LEDPager (string newjid, string password, void (*onRecvFunc)(void), int debug)
   {
     DEBUG = debug;
     JID jid(newjid);
+    onRecv = onRecvFunc;
     client = new Client( jid, password );
-    // MyMsgHandler* mHandler = new MyMsgHandler();
     vCardManager = new VCardManager(client);
     client->registerMessageHandler( this );
     client->registerConnectionListener(this);
@@ -47,7 +33,6 @@ class LEDPager : public MessageHandler, VCardHandler, ConnListener {
   {
     cout << "got vcard for jid: " << jid.bare() << endl;
     if (DEBUG) {
-      cout << "got vcard for jid: " << jid.bare() << endl;
       cout << "-" << endl;
       cout << "nickname: " << vcard->formattedname() << endl;
       cout << "-" << endl;
@@ -63,6 +48,7 @@ class LEDPager : public MessageHandler, VCardHandler, ConnListener {
   {
     auto vCardName = vCardIndex.find(stanza.from().username());
     RosterItem* myItem = client->rosterManager()->getRosterItem(stanza.from());
+    onRecv();
     if (stanza.body().size() == 0) {
       if (DEBUG) {
         cout << "Received 0 length message from " << myItem->jidJID().bare() << endl;
@@ -100,5 +86,6 @@ class LEDPager : public MessageHandler, VCardHandler, ConnListener {
   int DEBUG;
   unordered_map<string, string> vCardIndex;
   VCardManager* vCardManager;
+  void (*onRecv)(void);
 };
 
