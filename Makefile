@@ -1,12 +1,12 @@
 CMPL=g++-4.7
-FLAGS=-lgloox -lwiringPi -std=c++11 -Wall -g3
+FLAGS=-lgloox -ldstructs -lreactor -lwiringPi -std=c++11 -g3 $(LP_CFLAGS)
 TARGET=ledpager
 INSTALL_DEST=/usr/local/bin
 
 all: ledpager install
 
 ledpager:
-	$(CMPL) LEDPager.cpp main.cpp $(FLAGS) -o $(TARGET)
+	$(CMPL) $(FLAGS) LEDPager.cpp main.cpp -o $(TARGET)
 
 install:
 	cp $(TARGET) $(INSTALL_DEST)
