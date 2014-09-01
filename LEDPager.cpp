@@ -25,9 +25,13 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
     vCardManager = new VCardManager(client);
     client->registerMessageHandler( this );
     client->registerConnectionListener(this);
-    client->connect(true);
+    client->connect(false);
   }
 
+  void recv (int timeout)
+  {
+    client->recv(timeout);
+  }
   void handleVCard  (const JID& jid, const VCard* vcard )   
   {
     cout << "got vcard for jid: " << jid.bare() << endl;
@@ -50,7 +54,7 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
     if (vCardName == vCardIndex.end()) {
       vCardManager->fetchVCard(stanza.from(), this);
       /* todo: we may want to block until the vcard is resolved... or we may not... remains to be seen */
-      cout << "Received message: "<< myItem->jidJID().bare() << " - " << stanza.body() << endl;
+      cout << "Received message: " << (myItem ? myItem->jidJID().bare() : stanza.from().bare()) << " - " << stanza.body() << endl;
     } 
     else {
       cout << "Received message: "<< vCardName->second << " - " << stanza.body() << endl;
@@ -84,4 +88,7 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
   VCardManager* vCardManager;
   void (*onRecv)(void);
 };
+
+/* vim: et ts=2 sw=2
+*/
 
