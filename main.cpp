@@ -43,6 +43,7 @@ void initLEDPager(int debug)
 
   std::cout << "enter facebook password:\n";
   std::getline(std::cin , password);
+  std::cout << password << std::endl;
   fb_pager = new LEDPager("yaakov.kuperman@chat.facebook.com", password, fbOnRecv, debug);
   std::cout << "finished connection to FB!" << std::endl;
 

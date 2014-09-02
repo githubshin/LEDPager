@@ -26,6 +26,7 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
     client->registerMessageHandler( this );
     client->registerConnectionListener(this);
     client->connect(false);
+    barejid = jid.bare();
   }
 
   void recv (int timeout)
@@ -34,7 +35,7 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
   }
   void handleVCard  (const JID& jid, const VCard* vcard )   
   {
-    cout << "got vcard for jid: " << jid.bare() << endl;
+    cout << barejid << " - got vcard for jid: " << jid.bare() << endl;
     if (DEBUG) {
       cout << "-" << endl;
       cout << "nickname: " << vcard->formattedname() << endl;
@@ -45,7 +46,7 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
 
   void handleVCardResult ( VCardContext context, const JID& jid, StanzaError se = StanzaErrorUndefined )
   {
-    cout << "got error processing vcard for " << jid.bare() << endl;
+    cout << barejid << " - got error processing vcard for " << jid.bare() << endl;
   }
   void handleMessage( const Message& stanza, MessageSession* session = 0 ) 
   {
@@ -54,10 +55,10 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
     if (vCardName == vCardIndex.end()) {
       vCardManager->fetchVCard(stanza.from(), this);
       /* todo: we may want to block until the vcard is resolved... or we may not... remains to be seen */
-      cout << "Received message: " << (myItem ? myItem->jidJID().bare() : stanza.from().bare()) << " - " << stanza.body() << endl;
+      cout << barejid << " - Received message: " << (myItem ? myItem->jidJID().bare() : stanza.from().bare()) << " - " << stanza.body() << endl;
     } 
     else {
-      cout << "Received message: "<< vCardName->second << " - " << stanza.body() << endl;
+      cout << barejid << " - Received message: "<< vCardName->second << " - " << stanza.body() << endl;
     }
     if (stanza.body().size() != 0) {
       /* ffs I don't care about typing notifications */
@@ -69,19 +70,20 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
   }
 
   void onConnect() {
-    std::cout << "ConnListener::onConnect()" << endl;
+    std::cout << barejid << " - ConnListener::onConnect()" << endl;
   }
 
   void onDisconnect(ConnectionError e) {
-    std::cout << "ConnListener::onDisconnect() " << e << endl;
-    client->connect(true);
+    std::cout << barejid << " - ConnListener::onDisconnect() " << e << endl;
+    client->connect(false);
   }
 
   bool onTLSConnect(const CertInfo& info) {
-    std::cout << "ConnListener::onTLSConnect()" << endl;
+    std::cout << barejid << " - ConnListener::onTLSConnect()" << endl;
     return true;
   }
   private:
+  string barejid;
   Client* client;
   int DEBUG;
   unordered_map<string, string> vCardIndex;
