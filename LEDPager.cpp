@@ -25,14 +25,10 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
     vCardManager = new VCardManager(client);
     client->registerMessageHandler( this );
     client->registerConnectionListener(this);
-    client->connect(false);
+    this->connect(false);
     barejid = jid.bare();
   }
 
-  void recv (int timeout)
-  {
-    client->recv(timeout);
-  }
   void handleVCard  (const JID& jid, const VCard* vcard )   
   {
     cout << barejid << " - got vcard for jid: " << jid.bare() << endl;
@@ -82,6 +78,23 @@ class LEDPager : public MessageHandler, VCardHandler, ConnectionListener {
     std::cout << barejid << " - ConnListener::onTLSConnect()" << endl;
     return true;
   }
+
+  /* wrappers around the client connection functions */
+  void recv (int timeout)
+  {
+    client->recv(timeout);
+  }
+
+  void connect (bool blocking)
+  {
+    client->connect(blocking);
+  }
+
+  void disconnect ()
+  {
+    client->disconnect();
+  }
+
   private:
   string barejid;
   Client* client;
